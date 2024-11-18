@@ -1,0 +1,113 @@
+import csv
+import os
+#import allows us to access a pre written module of code. 
+#similar to checking out a book in a library 
+#csv stands for comma separated values. its  a file extension that has rows and columns like a excel spreadsheet
+# Function to create the structure of the CSV files if they don't exist
+def create_csv_files():
+    # Check if periodic_table.csv exists, if not, create it
+    if not os.path.exists('periodic_table.csv'):
+        with open('periodic_table.csv', 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['Symbol', 'Name', 'Atomic Number', 'Atomic Weight'])
+            writer.writeheader()
+            # Optionally add some default elements
+            writer.writerow({'Symbol': 'H', 'Name': 'Hydrogen', 'Atomic Number': 1, 'Atomic Weight': 1.008})
+            writer.writerow({'Symbol': 'O', 'Name': 'Oxygen', 'Atomic Number': 8, 'Atomic Weight': 15.999})
+            writer.writerow({'Symbol': 'C', 'Name': 'Carbon', 'Atomic Number': 6, 'Atomic Weight': 12.011})
+            
+            print("Created periodic_table.csv")
+
+    # Check if compounds.csv exists, if not, create it
+    # a file path is location on yor computer. 
+    #writer allows s to write into our file
+    if not os.path.exists('compounds.csv'):
+        with open('compounds.csv', 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=['Compound Name', 'Base Elements', 'Proportions'])
+            writer.writeheader()
+            # Optionally add a default compound
+            writer.writerow({'Compound Name': 'Water', 'Base Elements': 'H2O', 'Proportions': '2 H, 1 O'}) #hw add more compounds using write row function
+            print("Created compounds.csv")
+
+# Load periodic table from CSV
+def load_elements(file_name):
+    elements = {}
+    with open(file_name, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            elements[row['Symbol']] = {
+                'name': row['Name'],
+                'atomic_number': int(row['Atomic Number']),
+                'atomic_weight': float(row['Atomic Weight'])
+            }
+    return elements
+
+# Load custom compounds
+def load_compounds(file_name):
+    compounds = []
+    with open(file_name, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            compounds.append({
+                'name': row['Compound Name'],
+                'elements': row['Base Elements'],
+                'proportions': row['Proportions']
+            })
+    return compounds
+
+# View periodic table
+def view_periodic_table(elements):
+    for symbol, details in elements.items():
+        print(f"{symbol}: {details['name']} (Atomic Number: {details['atomic_number']}, Atomic Weight: {details['atomic_weight']})")
+
+# Create new compound
+def create_compound(elements):
+    compound_name = input("Enter the name of the new compound: ")
+    compound_elements = input("Enter the elements (e.g., H2O): ")
+    proportions = input("Enter the proportions (e.g., 2 H, 1 O): ")
+
+    return {'Compound Name': compound_name, 'Base Elements': compound_elements, 'Proportions': proportions}
+
+# Save new compound to CSV
+def save_compound(compound, file_name):
+    with open(file_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['Compound Name', 'Base Elements', 'Proportions'])
+        writer.writerow(compound)
+
+# Menu System
+def menu(elements, compounds_file):
+    while True:
+        print("\nMenu:")
+        print("1. View Periodic Table")
+        print("2. View Compounds")
+        print("3. Create New Compound")
+        print("4. Break Down Compound")
+        print("5. Exit")
+
+        choice = input("Choose an option: ")
+        if choice == '1':
+            view_periodic_table(elements)
+        elif choice == '2':
+            compounds = load_compounds(compounds_file)
+            for compound in compounds:
+                print(f"{compound['name']} is made of {compound['elements']} in proportions {compound['proportions']}")
+        elif choice == '3':
+            compound = create_compound(elements)
+            save_compound(compound, compounds_file)
+        elif choice == '4':
+            # You can implement a function to break down compounds here
+            pass
+        elif choice == '5':
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice, please try again.")
+
+if __name__ == "__main__":
+    elements_file = 'periodic_table.csv'
+    compounds_file = 'compounds.csv'
+
+    # Create CSV files if they don't exist
+    create_csv_files()
+
+    elements = load_elements(elements_file)
+    menu(elements, compounds_file)
